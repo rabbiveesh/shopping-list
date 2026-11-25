@@ -7,6 +7,7 @@ import { useShoppingStore } from '@/stores/shopping'
 import AccountMenu from '@/components/AccountMenu.vue'
 import ConflictCard from '@/components/ConflictCard.vue'
 import SignInButton from '@/components/SignInButton.vue'
+import UpdateReady from '@/components/UpdateReady.vue'
 
 const account = useAccountStore()
 const shopping = useShoppingStore()
@@ -17,6 +18,7 @@ onMounted(() => (configured ? account.follow() : shopping.load()))
 
 <template>
   <v-app>
+    <UpdateReady />
     <v-app-bar color="primary" density="comfortable">
       <v-app-bar-title>Shopping list</v-app-bar-title>
       <template v-if="configured" #append>

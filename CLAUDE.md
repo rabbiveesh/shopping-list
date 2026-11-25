@@ -4,7 +4,7 @@ A shopping list app in three stages: pick what's needed from a catalogue of food
 
 ## How work arrives
 
-Requests come from the developer and follow normal practice: a branch and a pull request, with CI green before merge. CI deploys `master` to GitHub Pages, so a merged change is live a few minutes later.
+Requests come from the developer and follow normal practice: a branch and a pull request. Merge each requested feature yourself as soon as CI is green, without asking first. CI deploys `master` to GitHub Pages, so a merged change is live a few minutes later.
 
 ## No personal names
 
