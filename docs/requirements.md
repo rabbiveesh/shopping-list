@@ -13,7 +13,7 @@ A shopping list in three stages, so planning, shopping and catching up on what w
 ## What it does today (v1)
 
 - The three stages above, with counts on the Shop and Fill-in tabs.
-- A placeholder catalogue (`web/src/data/starter.ts`) until the user's real list replaces it.
+- The user's own list, by aisle of their usual shop (`web/src/data/starter.ts`).
 - Works on the phone with no account. With the Firebase project set up, "Sync" signs in with Google and keeps the list in the cloud, bringing along what was done on the phone.
 - Two phones changing the same item at once (ticked off on one, can't find on the other) ask which is right, like Did It Last.
 - Works offline and installs on a phone (PWA).
@@ -27,7 +27,6 @@ A shopping list in three stages, so planning, shopping and catching up on what w
 
 ## Open questions
 
-- The real catalogue: the user's own list, with its aisles.
 - After a shop, should things not got stay on the list (today: yes)?
 - Should two people share one list (today: each Google account has its own)?
 - Quantities ("2 x milk"), or just names?
