@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { vOnLongPress } from '@vueuse/components'
 
 import { isOnList, type Item } from '@/core'
 import { useShoppingStore } from '@/stores/shopping'
@@ -24,6 +25,36 @@ function openAisle(aisle: string) {
 function addToAisle() {
   if (addingTo.value) shopping.addToAisle(aisleDraft.value, addingTo.value)
   addingTo.value = null
+}
+
+// A long press shows a trash can next to an item; the tap that ends it doesn't pick it.
+const armed = ref<string | null>(null)
+let longPressed = false
+const deleted = ref<Item | null>(null)
+
+function arm(item: Item) {
+  armed.value = item.id
+  longPressed = true
+}
+
+function tap(item: Item) {
+  if (longPressed) {
+    longPressed = false
+    return
+  }
+  armed.value = null
+  shopping.pick(item)
+}
+
+function remove(item: Item) {
+  armed.value = null
+  shopping.remove(item)
+  deleted.value = item
+}
+
+function undo() {
+  if (deleted.value) shopping.restore(deleted.value.id)
+  deleted.value = null
 }
 
 // On the list: filled green with a tick. Couldn't find last time: purple. Otherwise plain.
@@ -61,21 +92,32 @@ function look(item: Item) {
       {{ aisle.name }}
     </h2>
     <div class="d-flex flex-wrap ga-2">
-      <v-btn
-        v-for="item in aisle.items"
-        :key="item.id"
-        rounded="pill"
-        size="default"
-        height="44"
-        class="text-none"
-        :variant="look(item).variant"
-        :color="look(item).color"
-        :prepend-icon="look(item).icon"
-        :aria-pressed="isOnList(item)"
-        @click="shopping.pick(item)"
-      >
-        {{ item.name }}
-      </v-btn>
+      <span v-for="item in aisle.items" :key="item.id" class="d-inline-flex align-center ga-1">
+        <v-btn
+          v-on-long-press="[() => arm(item), { delay: 500 }]"
+          rounded="pill"
+          size="default"
+          height="44"
+          class="text-none no-callout"
+          :variant="look(item).variant"
+          :color="look(item).color"
+          :prepend-icon="look(item).icon"
+          :aria-pressed="isOnList(item)"
+          @click="tap(item)"
+          @contextmenu.prevent
+        >
+          {{ item.name }}
+        </v-btn>
+        <v-btn
+          v-if="armed === item.id"
+          icon="mdi-delete"
+          color="error"
+          variant="flat"
+          size="small"
+          :aria-label="`Delete ${item.name}`"
+          @click="remove(item)"
+        />
+      </span>
       <v-btn
         v-if="addingTo !== aisle.name"
         icon="mdi-plus"
@@ -111,6 +153,13 @@ function look(item: Item) {
       <v-btn icon="mdi-close" variant="text" aria-label="Cancel" @click="addingTo = null" />
     </v-form>
   </section>
+
+  <v-snackbar :model-value="deleted !== null" :timeout="6000" @update:model-value="deleted = null">
+    Deleted {{ deleted?.name }}
+    <template #actions>
+      <v-btn variant="text" class="text-none font-weight-bold" @click="undo">Undo</v-btn>
+    </template>
+  </v-snackbar>
 
   <v-footer app class="px-4 py-3 d-flex align-center ga-3" elevation="4">
     <span class="flex-grow-1 text-body-1">
