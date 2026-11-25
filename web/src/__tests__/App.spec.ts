@@ -3,6 +3,7 @@ import { screen, within } from '@testing-library/dom'
 import userEvent from '@testing-library/user-event'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
+import { ref } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
@@ -17,6 +18,9 @@ import { useDriver } from '@/storage'
 
 // No cloud project: the list stays on the phone, here in memory.
 vi.mock('@/firebase', () => ({ isFirebaseConfigured: () => false }))
+vi.mock('virtual:pwa-register/vue', () => ({
+  useRegisterSW: () => ({ needRefresh: ref(false), updateServiceWorker: () => {} }),
+}))
 
 async function openApp(path = '/') {
   const router = createRouter({ history: createMemoryHistory(), routes })

@@ -18,7 +18,8 @@ export default defineConfig({
     vuetify({ autoImport: true }),
     wasm(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // Ask before reloading, so an update never interrupts a shop: see UpdateReady.vue.
+      registerType: 'prompt',
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'Shopping List',
