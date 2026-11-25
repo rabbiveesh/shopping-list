@@ -7,6 +7,7 @@ import {
   itemNamed,
   ledger,
   lists,
+  newCatalogueItemEdits,
   newItemEdits,
   pickEdit,
   recordItemEdits,
@@ -76,6 +77,12 @@ export const useShoppingStore = defineStore('shopping', () => {
     else if (!isOnList(existing)) move(existing, 'needed')
   }
 
+  /** Adds something to one aisle of the catalogue, unless it's there already. */
+  function addToAisle(name: string, aisle: string) {
+    if (!name.trim() || itemNamed(items.value, name)) return
+    apply(crypto.randomUUID(), newCatalogueItemEdits(name, aisle))
+  }
+
   /** Takes what's in the cart off the list. */
   function finishShop() {
     for (const { itemId, edits } of finishShopEdits(items.value)) apply(itemId, edits)
@@ -97,6 +104,7 @@ export const useShoppingStore = defineStore('shopping', () => {
     pick,
     move,
     add,
+    addToAisle,
     finishShop,
     choose,
   }
