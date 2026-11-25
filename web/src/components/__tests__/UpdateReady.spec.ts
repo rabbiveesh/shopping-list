@@ -25,14 +25,14 @@ describe('a new version of the app', () => {
   it('says nothing while the app is up to date', () => {
     sw.ready = false
     open()
-    expect(screen.queryByText('An update is ready')).not.toBeInTheDocument()
+    expect(screen.queryByText('A new version of the app is ready.')).not.toBeInTheDocument()
   })
 
-  it('offers an update button once it has downloaded, and switches to it when tapped', async () => {
+  it('offers a reload button once it has downloaded, and switches to it when tapped', async () => {
     sw.ready = true
     open()
-    await userEvent.click(await screen.findByRole('button', { name: 'Update' }))
-    expect(screen.getByText('An update is ready')).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Reload' }))
+    expect(screen.getByText('A new version of the app is ready.')).toBeInTheDocument()
     expect(sw.update).toHaveBeenCalled()
   })
 })
