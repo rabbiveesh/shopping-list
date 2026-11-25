@@ -76,6 +76,20 @@ describe('the app', () => {
     expect(await screen.findByRole('button', { name: 'Tick off Hummus' })).toBeInTheDocument()
   })
 
+  it('the plus at the end of an aisle adds something to that aisle, ready to pick', async () => {
+    await openApp()
+    const user = userEvent.setup()
+    await user.click(
+      await screen.findByRole('button', { name: 'Add something to Aisle 11 · Breads' }),
+    )
+    await user.type(screen.getByLabelText('New in Aisle 11 · Breads'), 'Challah{Enter}')
+
+    const challah = await screen.findByRole('button', { name: 'Challah' })
+    expect(challah).toHaveAttribute('aria-pressed', 'false')
+    const breads = screen.getByText('Aisle 11 · Breads').closest('section')!
+    expect(within(breads).getByRole('button', { name: 'Challah' })).toBe(challah)
+  })
+
   it('ticking something off crosses it out in the cart, and finishing the shop clears it', async () => {
     const router = await openApp()
     const user = userEvent.setup()

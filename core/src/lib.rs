@@ -64,6 +64,11 @@ pub fn record_item_edits(
         .collect()
 }
 
+#[wasm_bindgen(js_name = newCatalogueItemEdits)]
+pub fn new_catalogue_item_edits(name: &str, aisle: &str) -> Result<Vec<Ts<ItemOp>>, JsError> {
+    to_ts(item_changes::new_catalogue_item_edits(name, aisle))
+}
+
 #[wasm_bindgen(js_name = newItemEdits)]
 pub fn new_item_edits(name: &str, aisle: &str) -> Result<Vec<Ts<ItemOp>>, JsError> {
     to_ts(item_changes::new_item_edits(name, aisle))

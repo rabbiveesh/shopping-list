@@ -12,6 +12,20 @@ function add() {
   draft.value = ''
 }
 
+// The aisle whose own add box is open, if any.
+const addingTo = ref<string | null>(null)
+const aisleDraft = ref('')
+
+function openAisle(aisle: string) {
+  addingTo.value = aisle
+  aisleDraft.value = ''
+}
+
+function addToAisle() {
+  if (addingTo.value) shopping.addToAisle(aisleDraft.value, addingTo.value)
+  addingTo.value = null
+}
+
 // On the list: filled green with a tick. Couldn't find last time: purple. Otherwise plain.
 function look(item: Item) {
   if (isOnList(item)) return { variant: 'flat', color: 'primary', icon: 'mdi-check' } as const
@@ -62,7 +76,40 @@ function look(item: Item) {
       >
         {{ item.name }}
       </v-btn>
+      <v-btn
+        v-if="addingTo !== aisle.name"
+        icon="mdi-plus"
+        size="small"
+        variant="tonal"
+        :aria-label="`Add something to ${aisle.name}`"
+        @click="openAisle(aisle.name)"
+      />
     </div>
+    <v-form
+      v-if="addingTo === aisle.name"
+      class="d-flex ga-2 mt-2"
+      @submit.prevent="addToAisle"
+      @keydown.esc="addingTo = null"
+    >
+      <v-text-field
+        v-model="aisleDraft"
+        :label="`New in ${aisle.name}`"
+        variant="outlined"
+        density="comfortable"
+        bg-color="surface"
+        autofocus
+        hide-details
+      />
+      <v-btn
+        type="submit"
+        color="primary"
+        icon="mdi-check"
+        rounded="lg"
+        :aria-label="`Add to ${aisle.name}`"
+        :disabled="!aisleDraft.trim()"
+      />
+      <v-btn icon="mdi-close" variant="text" aria-label="Cancel" @click="addingTo = null" />
+    </v-form>
   </section>
 
   <v-footer app class="px-4 py-3 d-flex align-center ga-3" elevation="4">

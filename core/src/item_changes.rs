@@ -111,7 +111,9 @@ pub enum Conflict {
 #[derive(Tsify, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Ledger {
-    /// Items the user added first, oldest first, then the starter items in their order.
+    /// Items the user added to aisles of their own first, oldest first, then the starter
+    /// items in their order, then items the user added to the starter aisles, oldest first.
+    /// Grouped by aisle, each added item lands at the end of its aisle.
     pub items: Vec<Item>,
     pub conflicts: Vec<Conflict>,
 }
@@ -138,16 +140,20 @@ pub fn ledger(starter: &[StarterItem], changes: &[Change<ItemEdit>]) -> Ledger {
         items: Vec::new(),
         conflicts: Vec::new(),
     };
+    let mut added_items = Vec::new();
     let order = added
         .into_iter()
         .map(|id| (id.to_string(), None))
         .chain(starter.iter().map(|s| (s.id.clone(), Some(s))));
     for (id, starter) in order {
+        let items = if starter.is_some() {
+            &mut ledger.items
+        } else {
+            &mut added_items
+        };
         let Some(merged) = merged.remove(&id) else {
             // A starter item nobody has touched yet.
-            ledger
-                .items
-                .extend(ItemDraft::default().finish(&id, starter));
+            items.extend(ItemDraft::default().finish(&id, starter));
             continue;
         };
         let mut keep_or_delete = merged.deleted_while_edited;
@@ -168,9 +174,17 @@ pub fn ledger(starter: &[StarterItem], changes: &[Change<ItemEdit>]) -> Ledger {
             });
         }
         if !merged.deleted || keep_or_delete {
-            ledger.items.extend(merged.record.finish(&id, starter));
+            items.extend(merged.record.finish(&id, starter));
         }
     }
+    let (in_starter_aisles, own_aisles): (Vec<Item>, Vec<Item>) = added_items
+        .into_iter()
+        .partition(|a| ledger.items.iter().any(|s| s.aisle == a.aisle));
+    ledger.items = own_aisles
+        .into_iter()
+        .chain(std::mem::take(&mut ledger.items))
+        .chain(in_starter_aisles)
+        .collect();
     ledger
 }
 
@@ -178,13 +192,19 @@ fn set_status(status: Status) -> ItemOp {
     ItemOp(Edit::Set(ItemEdit::Status(status)))
 }
 
-/// A new item, straight onto the shopping list.
-pub fn new_item_edits(name: &str, aisle: &str) -> Vec<ItemOp> {
+/// A new item in an aisle of the catalogue, not on the shopping list yet.
+pub fn new_catalogue_item_edits(name: &str, aisle: &str) -> Vec<ItemOp> {
     vec![
         ItemOp(Edit::Set(ItemEdit::Name(name.trim().to_string()))),
         ItemOp(Edit::Set(ItemEdit::Aisle(aisle.to_string()))),
-        set_status(Status::Needed),
     ]
+}
+
+/// A new item, straight onto the shopping list.
+pub fn new_item_edits(name: &str, aisle: &str) -> Vec<ItemOp> {
+    let mut edits = new_catalogue_item_edits(name, aisle);
+    edits.push(set_status(Status::Needed));
+    edits
 }
 
 /// Tapping an item while picking.
@@ -281,6 +301,22 @@ mod tests {
         let names: Vec<&str> = ledger.items.iter().map(|i| i.name.as_str()).collect();
         assert_eq!(names, ["Hummus", "Tahini", "Milk", "Rice cakes"]);
         assert_eq!(status_of(&ledger, "b"), Some(Status::Needed));
+    }
+
+    #[test]
+    fn an_item_added_to_an_aisle_shows_at_the_end_of_it_and_off_the_list() {
+        let log = record(
+            &[],
+            "a",
+            ops(new_catalogue_item_edits("Tahini", "Shop")),
+            &stamp("phone", 1.0),
+        );
+        let ledger = ledger(&starter(), &log);
+        let aisles = crate::items::aisles(&ledger.items);
+        let names: Vec<&str> = aisles[0].items.iter().map(|i| i.name.as_str()).collect();
+        assert_eq!(aisles.len(), 1);
+        assert_eq!(names, ["Milk", "Rice cakes", "Tahini"]);
+        assert_eq!(status_of(&ledger, "a"), Some(Status::Off));
     }
 
     #[test]

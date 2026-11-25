@@ -4,7 +4,7 @@
 
 A shopping list in three stages, so planning, shopping and catching up on what was missed each have their own screen.
 
-1. **Pick** (before shopping): a catalogue of foods grouped by aisle. Tapping one puts it on the list; tapping again takes it off. A box at the top adds something new, straight onto the list.
+1. **Pick** (before shopping): a catalogue of foods grouped by aisle. Tapping one puts it on the list; tapping again takes it off. A box at the top adds something new, straight onto the list. A small plus at the end of each aisle adds something to that aisle of the catalogue, not yet on the list.
 2. **Shop**: the list, grouped by aisle. Tapping an item (or swiping it right) ticks it off: it moves to "In the cart", crossed out, and tapping it there puts it back. A purple button (or swiping left) marks something that couldn't be found, which moves it to the fill-in list.
 3. **Fill-in**: what couldn't be found, for another shop. "Got it" clears an item; "To list" puts it back on the main list.
 
@@ -30,6 +30,6 @@ A shopping list in three stages, so planning, shopping and catching up on what w
 - After a shop, should things not got stay on the list (today: yes)?
 - Should two people share one list (today: each Google account has its own)?
 - Quantities ("2 x milk"), or just names?
-- Removing or renaming catalogue items in the app.
+- Removing or renaming catalogue items in the app (adding to an aisle exists).
 - Swipes have no drag animation yet (Vuetify's `v-touch` fires on release).
 - The log grows with every tap; it may need compacting once it holds thousands of changes.
