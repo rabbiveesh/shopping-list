@@ -8,8 +8,8 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::changes::{self, Change, Edit, Record};
 use crate::items::{after_shop, picked, Item, StarterItem, Status};
+use change_graph::{Change, Edit, Merged, Record};
 
 /// One field of an item, set to a new value.
 #[derive(Tsify, Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -118,7 +118,7 @@ pub struct Ledger {
 
 /// Replays the log over the starter items.
 pub fn ledger(starter: &[StarterItem], changes: &[Change<ItemEdit>]) -> Ledger {
-    let mut merged: BTreeMap<String, changes::Merged<ItemDraft>> = changes::merge(changes)
+    let mut merged: BTreeMap<String, Merged<ItemDraft>> = change_graph::merge(changes)
         .into_iter()
         .map(|m| (m.id.clone(), m))
         .collect();
@@ -212,7 +212,7 @@ pub fn finish_shop_edits(items: &[Item]) -> Vec<ItemEdits> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::changes::{record, Stamp};
+    use change_graph::{record, Stamp};
 
     fn stamp(device: &str, at: f64) -> Stamp {
         Stamp {
