@@ -79,17 +79,17 @@ describe('the app', () => {
   it('ticking something off crosses it out in the cart, and finishing the shop clears it', async () => {
     const router = await openApp()
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Milk' }))
+    await user.click(await screen.findByRole('button', { name: 'Bamba' }))
     await user.click(screen.getByRole('button', { name: 'Eggs' }))
     await go(router, '/shop')
 
-    await user.click(await screen.findByRole('button', { name: 'Tick off Milk' }))
-    const crossedOut = screen.getByRole('button', { name: 'Put Milk back on the list' })
-    expect(within(crossedOut).getByText('Milk').tagName).toBe('S')
+    await user.click(await screen.findByRole('button', { name: 'Tick off Bamba' }))
+    const crossedOut = screen.getByRole('button', { name: 'Put Bamba back on the list' })
+    expect(within(crossedOut).getByText('Bamba').tagName).toBe('S')
     expect(screen.getByText(/in the cart$/)).toHaveTextContent('1 of 2 in the cart')
 
     await user.click(screen.getByRole('button', { name: 'Finish shop' }))
-    expect(screen.queryByText('Milk')).not.toBeInTheDocument()
+    expect(screen.queryByText('Bamba')).not.toBeInTheDocument()
     // What wasn't got stays on the list.
     expect(screen.getByRole('button', { name: 'Tick off Eggs' })).toBeInTheDocument()
   })
@@ -97,36 +97,42 @@ describe('the app', () => {
   it("something you can't find moves to the fill-in list, ready for another shop", async () => {
     const router = await openApp()
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Coffee' }))
+    await user.click(await screen.findByRole('button', { name: 'Instant coffee' }))
     await go(router, '/shop')
-    await user.click(await screen.findByRole('button', { name: "Can't find Coffee" }))
-    expect(screen.queryByRole('button', { name: 'Tick off Coffee' })).not.toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: "Can't find Instant coffee" }))
+    expect(
+      screen.queryByRole('button', { name: 'Tick off Instant coffee' }),
+    ).not.toBeInTheDocument()
 
     await go(router, '/fill-in')
-    await user.click(await screen.findByRole('button', { name: 'Put Coffee back on the list' }))
+    await user.click(
+      await screen.findByRole('button', { name: 'Put Instant coffee back on the list' }),
+    )
     expect(screen.getByText('Nothing missing.')).toBeInTheDocument()
     await go(router, '/shop')
-    expect(await screen.findByRole('button', { name: 'Tick off Coffee' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Tick off Instant coffee' }),
+    ).toBeInTheDocument()
   })
 
   it('remembers the list after the app is closed and opened again', async () => {
     await openApp()
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Tea' }))
+    await user.click(await screen.findByRole('button', { name: 'Honey' }))
     await flushPromises()
     document.body.innerHTML = ''
 
     await openApp('/shop')
-    expect(await screen.findByRole('button', { name: 'Tick off Tea' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Tick off Honey' })).toBeInTheDocument()
   })
 
   it('asks which list is right when two phones disagree', async () => {
-    const onList = recordItemEdits([], 'starter:milk', [statusEdit('needed')], {
+    const onList = recordItemEdits([], 'starter:bamba', [statusEdit('needed')], {
       at: 1,
       device: 'phone',
     })
     const move = (status: 'got' | 'missing', device: string, at: number) =>
-      recordItemEdits(onList, 'starter:milk', [statusEdit(status)], { at, device })
+      recordItemEdits(onList, 'starter:bamba', [statusEdit(status)], { at, device })
     await appendChanges([...onList, ...move('got', 'phone', 2), ...move('missing', 'tablet', 3)])
 
     await openApp('/shop')
@@ -135,6 +141,6 @@ describe('the app', () => {
     await user.click(screen.getByRole('button', { name: 'In the cart' }))
     await flushPromises()
     expect(screen.queryByText(/changed on two phones at once/)).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Put Milk back on the list' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Put Bamba back on the list' })).toBeInTheDocument()
   })
 })
