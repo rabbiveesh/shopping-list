@@ -83,6 +83,11 @@ export const useShoppingStore = defineStore('shopping', () => {
     apply(crypto.randomUUID(), newCatalogueItemEdits(name, aisle))
   }
 
+  /** Deletes an item from the catalogue (and from any list it is on). */
+  const remove = (item: Item) => apply(item.id, [{ op: 'deleted', value: true }])
+  /** Brings back a deleted item, as it was. */
+  const restore = (itemId: string) => apply(itemId, [{ op: 'deleted', value: false }])
+
   /** Takes what's in the cart off the list. */
   function finishShop() {
     for (const { itemId, edits } of finishShopEdits(items.value)) apply(itemId, edits)
@@ -105,6 +110,8 @@ export const useShoppingStore = defineStore('shopping', () => {
     move,
     add,
     addToAisle,
+    remove,
+    restore,
     finishShop,
     choose,
   }

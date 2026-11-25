@@ -73,6 +73,11 @@ onMounted(() => (configured ? account.follow() : shopping.load()))
 </template>
 
 <style>
+/* A long press on an item shows its trash can, not the browser's own menu. */
+.no-callout {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
 .aisle-heading {
   font-size: 0.8rem;
   letter-spacing: 0.08em;

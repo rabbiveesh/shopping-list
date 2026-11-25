@@ -90,6 +90,23 @@ describe('the app', () => {
     expect(within(breads).getByRole('button', { name: 'Challah' })).toBe(challah)
   })
 
+  it('a long press on an item shows a trash can that deletes it, with a way to undo', async () => {
+    await openApp()
+    const user = userEvent.setup()
+    const bamba = await screen.findByRole('button', { name: 'Bamba' })
+    await user.pointer({ keys: '[MouseLeft>]', target: bamba })
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    await user.pointer({ keys: '[/MouseLeft]', target: bamba })
+    // Holding it down doesn't pick it.
+    expect(bamba).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(screen.getByRole('button', { name: 'Delete Bamba' }))
+    expect(screen.queryByRole('button', { name: 'Bamba' })).not.toBeInTheDocument()
+
+    await user.click(await screen.findByRole('button', { name: 'Undo' }))
+    expect(await screen.findByRole('button', { name: 'Bamba' })).toBeInTheDocument()
+  })
+
   it('ticking something off crosses it out in the cart, and finishing the shop clears it', async () => {
     const router = await openApp()
     const user = userEvent.setup()
